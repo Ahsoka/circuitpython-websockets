@@ -116,3 +116,11 @@ class ClientConnection:
                 if err.errno != errno.ETIMEDOUT:
                     raise
                 yield None
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if not self.closed:
+            self.close()
