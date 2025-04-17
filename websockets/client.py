@@ -87,10 +87,10 @@ class ClientConnection:
         self.raw_send(frame)
 
     def close(self, code: int = 1000, reason: str = '', sleep: float | None = 0.5):
-        if sleep:
-            time.sleep(sleep) # sleep just to make sure that the close frame is sent properly.
         self.raw_send(create_close_frame(code, reason))
         self.closed = True
+        if sleep:
+            time.sleep(sleep) # sleep just to make sure that the close frame is sent properly.
         self.sock.close()
 
     def __iter__(self):
