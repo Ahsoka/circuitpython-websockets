@@ -1,4 +1,4 @@
-from .utils import encode_websocket_frame, unpack_websocket_frame, create_pong_frame
+from .utils import encode_websocket_frame, unpack_websocket_frame, create_pong_frame, create_close_frame
 from .exceptions import InvalidHanshake, ExceededRetryLimit
 
 import socketpool
@@ -6,6 +6,7 @@ import binascii
 import warnings
 import errno
 import wifi
+import time
 import os
 
 
@@ -84,6 +85,13 @@ class ClientConnection:
     def send(self, message: str):
         frame = encode_websocket_frame(message)
         self.raw_send(frame)
+
+    def close(self, code: int = 1000, reason: str = '', sleep: float | None = 0.5):
+        if sleep:
+            time.sleep(sleep) # sleep just to make sure that the close frame is sent properly.
+        self.raw_send(create_close_frame(code, reason))
+        self.closed = True
+        self.sock.close()
 
     def __iter__(self):
         while not self.closed:
