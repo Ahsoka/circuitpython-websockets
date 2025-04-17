@@ -55,3 +55,17 @@ def create_pong_frame(payload: bytearray) -> bytearray:
     frame.extend(masking_key)  # Append the masking key
     frame.extend(masked_payload)  # Append masked payload
     return frame
+
+def create_close_frame(code=1000, reason=""):
+    """Sends a properly masked WebSocket Close frame."""
+    payload = struct.pack(">H", code) + reason.encode("utf-8")  # 2 bytes for code + reason
+    masking_key = os.urandom(4)  # 4-byte masking key
+    masked_payload = bytes(payload[i] ^ masking_key[i % 4] for i in range(len(payload)))
+
+    frame = bytearray()
+    frame.append(0b10001000)  # FIN=1, Opcode=0x8 (Close)
+    frame.append(0b10000000 | len(payload))  # MASK bit + payload length (<=125 bytes)
+    frame.extend(masking_key)
+    frame.extend(masked_payload)
+
+    return frame
